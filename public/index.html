@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        #input-container {
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .action-container {
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        input[type="text"], select {
+            width: 200px;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            margin: 5px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .filter-inputs {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .filter-inputs.show {
+            display: block;
+        }
+        iframe {
+            width: 100%;
+            height: 80vh;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            margin-top: 20px;
+            background: white;
+        }
+        .nav-link {
+            margin-top: 20px;
+        }
+        .nav-link a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .nav-link a:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Parent Application</h1>
+        <div id="input-container">
+            <input type="text" id="urlInput" placeholder="Enter URL here (e.g., https://example.com)" value="">
+            <button onclick="loadUrl()">Load URL</button>
+        </div>
+        <div class="action-container">
+            <h3>Select Action</h3>
+            <select id="actionSelect" onchange="toggleFilterInputs()">
+                <option value="">Choose an action...</option>
+                <option value="vizpadFilter">vizpadFilter</option>
+                <option value="vizFilter">vizFilter</option>
+                <option value="INITIALIZE_ROW_LEVEL_POLICY">INITIALIZE_ROW_LEVEL_POLICY</option>
+            </select>
+            
+            <div id="filterInputs" class="filter-inputs">
+                <input type="text" id="columnName" placeholder="Column Name">
+                <input type="text" id="operator" placeholder="Operator">
+                <input type="text" id="value" placeholder="Value">
+                <input type="text" id="businessViewId" placeholder="Business View ID" style="display: none;">
+                <input type="text" id="vizId" placeholder="Viz ID" style="display: none;">
+                <button onclick="applyAction()">Apply</button>
+            </div>
+        </div>
+        <iframe id="embeddedApp" src="" width="100%" height="700" frameborder="0" sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+        <div class="nav-link">
+            <a href="index.html">← Back to Main App</a>
+        </div>
+    </div>
+    
+    <script>
+        function setIframeToInput() {
+            const url = document.getElementById("urlInput").value;
+            if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
+                document.getElementById("embeddedApp").src = url;
+            }
+        }
+        function loadUrl() {
+            setIframeToInput();
+        }
+        
+        function toggleFilterInputs() {
+            const actionSelect = document.getElementById("actionSelect");
+            const filterInputs = document.getElementById("filterInputs");
+            const vizIdInput = document.getElementById("vizId");
+            const businessViewIdInput = document.getElementById("businessViewId");
+            if (actionSelect.value) {
+                filterInputs.classList.add("show");
+                // Show Viz ID input only for vizFilter action
+                if (actionSelect.value === "vizFilter") {
+                    vizIdInput.style.display = "inline-block";
+                    businessViewIdInput.style.display = "none";
+                } else {
+                    vizIdInput.style.display = "none";
+                    businessViewIdInput.style.display = "inline-block";
+                }
+            } else {
+                filterInputs.classList.remove("show");
+                vizIdInput.style.display = "none";
+            }
+        }
+        
+        function applyAction() {
+            const action = document.getElementById("actionSelect").value;
+            const columnName = document.getElementById("columnName").value;
+            const operator = document.getElementById("operator").value;
+            var value = document.getElementById("value").value;
+            const businessViewId = document.getElementById("businessViewId").value;
+            const vizId = document.getElementById("vizId").value;
+            const commaPresent = value.includes(",");
+            if(commaPresent){
+                value = value.split(",");
+            }
+            switch(action){
+                case "vizpadFilter": vizpadFilter(businessViewId, value, columnName, operator);
+                    break;
+                case "vizFilter": vizFilter(businessViewId, vizId, value, columnName, operator);
+                    break;
+                case "INITIALIZE_ROW_LEVEL_POLICY": INITIALIZE_ROW_LEVEL_POLICY(businessViewId, value, columnName, operator);
+                    break;
+                default: console.log("Invalid action");
+            }
+           
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById("urlInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                setIframeToInput();
+            }
+        });
+        
+        // On page load, sync iframe with input value
+        window.addEventListener('DOMContentLoaded', setIframeToInput);
+        var telliusFrame ;
+        document.querySelector("iframe").addEventListener("load", function() {
+            telliusFrame = document.getElementsByTagName("iframe")[0].contentWindow;
+            telliusFrame.postMessage('INITIALIZE', "*");
+        })
+        function vizpadFilter(businessViewId, value, columnName, operator){
+            if(!businessViewId || !value || !columnName || !operator){
+                return;
+            }
+            telliusFrame.postMessage({
+                actionType: "vizpadFilter",
+                filters: [{
+                    businessViewId: businessViewId,
+                    value: value,
+                    column: columnName,
+                    operator: operator
+                }]
+            }, "*");
+            }
+            function vizFilter(businessViewId, vizId, value, columnName, operator){
+                if(!businessViewId || !vizId || !value || !columnName || !operator){
+                    return;
+                }
+                telliusFrame.postMessage({
+                actionType: "vizFilter",
+                filters: [{
+                    vizId: vizId,
+                    value: value,
+                    column: columnName,
+                    operator: operator
+                }]
+            }, "*");
+            }
+            function INITIALIZE_ROW_LEVEL_POLICY(businessViewId, value, columnName, operator){
+                if(!businessViewId || !value || !columnName || !operator){
+                    return;
+                }
+                telliusFrame.postMessage({
+               actionType: "INITIALIZE_ROW_LEVEL_POLICY",
+               rowLevelPolicies: [{
+                       "rowLevelPolicy": {
+                           "operator": "and",
+                           "args": [
+                               {
+                                   "value": value,
+                                   "field": columnName,
+                                   "condition": operator
+                               }
+                           ],
+                           "businessViewId": businessViewId
+                       },
+               }
+              
+            ],
+           }, "*") 
+            }
+
+        
+        function receiveMessage(event) {
+            if(event.data === 'TELLIUS_INITIALIZED') {
+                const action = document.getElementById("actionSelect").value;
+                const columnName = document.getElementById("columnName").value;
+                const operator = document.getElementById("operator").value;
+                var value = document.getElementById("value").value;
+                const businessViewId = document.getElementById("businessViewId").value;
+                const vizId = document.getElementById("vizId").value;
+                const commaPresent = value.includes(",");
+                if(commaPresent){
+                    value = value.split(",");
+                }
+                switch(action){
+                    case "vizpadFilter": vizpadFilter(businessViewId, value, columnName, operator);
+                        break;
+                    case "vizFilter": vizFilter(businessViewId, vizId, value, columnName, operator);
+                        break;
+                    case "INITIALIZE_ROW_LEVEL_POLICY": INITIALIZE_ROW_LEVEL_POLICY(businessViewId, value, columnName, operator);
+                        break;
+                    default: console.log("Invalid action");
+                }                        
+                
+            }
+        }
+        window.addEventListener("message", receiveMessage);
+    </script>
+</body>
+</html> 
