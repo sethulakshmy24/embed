@@ -1,0 +1,43 @@
+dist: jammy
+notifications:
+  slack:
+    template:
+      - "%{repository}#%{branch} - %{commit}  %{author} %{message}"
+      - "Embed App [%{branch}] - Docker deployment:"
+      - "Change view - %{compare_url}"
+      - "Build details - %{build_url}"
+      - "Duration - %{duration}"
+    rooms:
+      secure: OSQV8f509+HWSKpvLHekTBTM9INvEjTfCqo2BUeKGRqW8tIJ4jXkR+0C/q97vR/BHVsWkICd0jY7RBnhLLhSWOUi7AJy9+BJUGu6bDl+f6sgsQJxWT8SGnJzAGsb5ScRI35fxEyFuh09MTp7gHaZDjIntsT7aLxjmSZegss3qpxLHaPtfMMPIUaU27rVzou5BTktS2CvyVnOIGXBOLTOKGO1hMS5HKeBD7o0pG5SA19n87AqcC6Y41R3EPWlZi8LXhAT96nlJdO5plpRtb5AisRfmUW+9X0DDIYb73wDTUYecFmtQ9h9IYnu8QfSL9QmgUSzmQE16e30bwXtOEhOX5lIH5IjNz+/0P1dLB3ogNOk321ZAGa4xATSiNb9y9VB0OG8DGjIioT625Bndj6aM1RRbj5AwESUXR4Aq6E02RjBnMOXzUyQhL0j43st52mYolPJtsKRl1o60cStPp1aCGL6fjlDLrp6qvAkMhbS0v7adKGM66SAKPuB+tuIbfM/MFRCtHcfjEOd5Le6x2dyqPd2gZvvwoWXkpjuZpWtyZF4uFHvT/sny3FuHAWxZvvNIXXsBjv6qZeDHzPneHi6QhRARXC8I/MVGmqGJjS3yUr8HCLzmbBgGA74cQ30fAPhh2QlLsO0EXnO5vRb3VoN0H8iGmrMB8XDsr8kQCib4E=
+    on_success: always
+    on_failure: always
+
+language: node_js
+node_js:
+  - "18"
+
+services:
+  - docker
+
+sudo: required
+
+branches:
+  only:
+    - main
+    - /^\d+.\d+.\d+.*$/
+    - /^release-\d+.\d+$/
+    - embed-app
+    - /^embed-.*$/
+
+before_install:
+  - while sleep 9m; do echo "=====[ Build in Progress ]====="; done &
+  - sh travis/installTools.sh
+
+script:
+  - sh travis/buildAndPushDockerImage.sh
+
+env:
+  global:
+    - EMBED_DEPLOY_BRANCH=embed_dev
+    - DOCKER_IMAGE_NAME=embed-app
+    - DOCKER_REGISTRY=your-registry.com 

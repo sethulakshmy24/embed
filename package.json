@@ -1,0 +1,17 @@
+{
+  "name": "embed-app",
+  "version": "1.0.0",
+  "description": "Embed application for iframe integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["embed", "iframe", "cross-origin"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 
