@@ -172,7 +172,7 @@
             switch(action){
                 case "vizpadFilter": vizpadFilter(businessViewId, value, columnName, operator);
                     break;
-                case "vizFilter": vizFilter(businessViewId, vizId, value, columnName, operator);
+                case "vizFilter": vizFilter(vizId, value, columnName, operator);
                     break;
                 case "INITIALIZE_ROW_LEVEL_POLICY": INITIALIZE_ROW_LEVEL_POLICY(businessViewId, value, columnName, operator);
                     break;
@@ -209,8 +209,8 @@
                 }]
             }, "*");
             }
-            function vizFilter(businessViewId, vizId, value, columnName, operator){
-                if(!businessViewId || !vizId || !value || !columnName || !operator){
+            function vizFilter(vizId, value, columnName, operator){
+                if(!vizId || !value || !columnName || !operator){
                     return;
                 }
                 telliusFrame.postMessage({
@@ -263,7 +263,7 @@
                 switch(action){
                     case "vizpadFilter": vizpadFilter(businessViewId, value, columnName, operator);
                         break;
-                    case "vizFilter": vizFilter(businessViewId, vizId, value, columnName, operator);
+                    case "vizFilter": vizFilter(vizId, value, columnName, operator);
                         break;
                     case "INITIALIZE_ROW_LEVEL_POLICY": INITIALIZE_ROW_LEVEL_POLICY(businessViewId, value, columnName, operator);
                         break;
